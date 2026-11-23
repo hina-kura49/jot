@@ -1,0 +1,321 @@
+// @vitest-environment jsdom
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { BackendError, setBackend } from '@/backend'
+import { MockBackend } from '@/backend/mock'
+import { setActiveSession, type ActiveSession } from '@/editor/registry'
+import { countPages, findParentFolder, firstPage, useApp } from '../app'
+
+const initialState = useApp.getState()
+let mock: MockBackend
+
+beforeEach(async () => {
+  mock = new MockBackend()
+  setBackend(mock)
+  useApp.setState(initialState, true)
+  await useApp.getState().init()
+})
+
+const app = () => useApp.getState()
+const treeHas = (path: string) => JSON.stringify(app().tree).includes(`"path":"${path}"`)
+
+describe('新規ページ', () => {
+  it('⌘N / 新規ページ: 開いているページと同じフォルダに「無題」を作って開き、タイトルを選んだ状態にする', async () => {
+    await app().openPage('仕事/企画/新しいプロダクトの考え方.md')
+    await app().newPage('sibling')
+    expect(app().page?.path).toBe('仕事/企画/無題.md')
+    expect(treeHas('仕事/企画/無題.md')).toBe(true)
+    expect(app().titleFocus).toMatchObject({ path: '仕事/企画/無題.md', select: true })
+  })
+
+  it('もう一度作ると、バックエンドが連番を付けたタイトルを正とする', async () => {
+    await app().openPage('仕事/企画/新しいプロダクトの考え方.md')
+    await app().newPage('sibling')
+    await app().newPage('sibling')
+    expect(app().page?.path).toBe('仕事/企画/無題 2.md')
+  })
+
+  it('⌘⇧N: 開いているページの子ページを作る', async () => {
+    await app().openPage('仕事/企画/新しいプロダクトの考え方.md')
+    await app().newPage('child')
+    expect(app().page?.path).toBe('仕事/企画/新しいプロダクトの考え方/無題.md')
+  })
+
+  it('フォルダを指定して作る(ツリーのメニュー)', async () => {
+    await app().newPage({ folder: '学び/技術' })
+    expect(app().page?.path).toBe('学び/技術/無題.md')
+  })
+
+  it('ページを開いていなければ、ルートに作る', async () => {
+    app().closePage()
+    await app().newPage('sibling')
+    expect(app().page?.path).toBe('無題.md')
+  })
+})
+
+describe('削除', () => {
+  it('開いているページを消したら「ゴミ箱に移動しました」と知らせ、最近開いたページを開く', async () => {
+    await app().openPage('日記/2025/今日の振り返り.md')
+    await app().deletePage('日記/2025/今日の振り返り.md')
+    expect(app().notice?.title).toBe('ゴミ箱に移動しました')
+    expect(treeHas('日記/2025/今日の振り返り.md')).toBe(false)
+    expect(app().page?.path).toBe('仕事/企画/新しいプロダクトの考え方.md')
+  })
+
+  it('開いていないページを消しても、開いているページはそのまま', async () => {
+    await app().openPage('日記/2025/今日の振り返り.md')
+    await app().deletePage('学び/技術/技術調査メモ.md')
+    expect(app().page?.path).toBe('日記/2025/今日の振り返り.md')
+  })
+})
+
+describe('削除の確認', () => {
+  const PARENT = '検証/子ページのあるページ.md'
+
+  it('子ページを持つページは、件数を示して確認する(まだ消さない)', async () => {
+    await app().requestDelete(PARENT)
+    expect(app().notice).toMatchObject({ tone: 'warning', title: 'このページと子ページ 3 件をゴミ箱に移動します', focus: true })
+    expect(app().notice?.actions.map((a) => a.label)).toEqual(['ゴミ箱に移動', 'キャンセル'])
+    expect(treeHas(PARENT)).toBe(true)
+  })
+
+  it('「ゴミ箱に移動」で子ページごと消え、開いていた子ページも閉じて最近のページを開く', async () => {
+    await app().openPage('検証/子ページのあるページ/子ページ2/孫ページ.md')
+    await app().requestDelete(PARENT)
+    await app().notice?.actions[0].run()
+    expect(treeHas(PARENT)).toBe(false)
+    expect(treeHas('検証/子ページのあるページ/子ページ2/孫ページ.md')).toBe(false)
+    expect(app().notice?.title).toBe('ゴミ箱に移動しました')
+    expect(app().page?.path).not.toMatch(/^検証\/子ページのあるページ/)
+  })
+
+  it('「キャンセル」では何も消さない', async () => {
+    await app().requestDelete(PARENT)
+    await app().notice?.actions[1].run()
+    expect(treeHas(PARENT)).toBe(true)
+  })
+
+  it('子を持たないページは、確認なしで削除する', async () => {
+    await app().requestDelete('学び/技術/技術調査メモ.md')
+    expect(treeHas('学び/技術/技術調査メモ.md')).toBe(false)
+    expect(app().notice?.title).toBe('ゴミ箱に移動しました')
+  })
+
+  it('ツリーでは、同じ名前のフォルダの中身がページの子として並ぶ(バックエンドと同じ形)', () => {
+    const parent = app().tree.find((n) => n.path === '検証')?.children.find((n) => n.path === PARENT)
+    expect(parent?.kind).toBe('page')
+    expect(countPages(parent?.children ?? [])).toBe(3)
+  })
+})
+
+describe('ツリーとの連携', () => {
+  it('ページを開くと、ツリーにそのページの行を見せる合図が出る', async () => {
+    await app().openPage('学び/技術/技術調査メモ.md')
+    expect(app().reveal?.path).toBe('学び/技術/技術調査メモ.md')
+  })
+
+  it('ページの入っているフォルダは、path を加工せずツリーの親子関係から求める', () => {
+    const tree = app().tree
+    expect(findParentFolder(tree, '仕事/会議メモ/10:00 打ち合わせ.md')).toBe('仕事/会議メモ')
+    expect(findParentFolder(tree, 'Inbox.md')).toBeNull()
+  })
+})
+
+describe('クイックキャプチャのホットキー', () => {
+  it('登録できなかったことを、既存の通知で知らせる', () => {
+    useApp.getState().warnCaptureShortcut()
+    expect(useApp.getState().notice).toMatchObject({
+      tone: 'warning',
+      title: '⌃⌥Space はほかのアプリが使っているため、クイックキャプチャのショートカットを登録できませんでした',
+      actions: [],
+    })
+  })
+})
+
+describe('開くページがないとき', () => {
+  it('最近開いたページがなければ、ツリーの最初のページを開く', async () => {
+    const m = new MockBackend()
+    vi.spyOn(m, 'recentPages').mockResolvedValue([])
+    setBackend(m)
+    useApp.setState(initialState, true)
+    await useApp.getState().init()
+    expect(useApp.getState().page?.path).toBe(firstPage(useApp.getState().tree))
+  })
+})
+
+describe('保管庫の選び直し', () => {
+  it('未保存の変更を保存してから選び直し、前の保管庫のページを残さない', async () => {
+    const m = new MockBackend()
+    setBackend(m)
+    useApp.setState(initialState, true)
+    await useApp.getState().init()
+    expect(useApp.getState().page).not.toBeNull()
+    const order: string[] = []
+    vi.spyOn(m, 'openVault').mockImplementation(async () => {
+      order.push('open')
+      expect(useApp.getState().page).not.toBeNull()
+      return '/別の保管庫'
+    })
+    vi.spyOn(m, 'listTree').mockResolvedValue([])
+    vi.spyOn(m, 'recentPages').mockResolvedValue([])
+    await useApp.getState().openVault()
+    expect(order).toEqual(['open'])
+    expect(useApp.getState()).toMatchObject({ status: 'ready', page: null, tree: [], cache: {} })
+  })
+
+  it('キャンセルしたら、いまの保管庫のまま', async () => {
+    const m = new MockBackend()
+    setBackend(m)
+    useApp.setState(initialState, true)
+    await useApp.getState().init()
+    const page = useApp.getState().page
+    vi.spyOn(m, 'openVault').mockResolvedValue(null)
+    await useApp.getState().openVault()
+    expect(useApp.getState().page).toBe(page)
+  })
+})
+
+describe('ツリーを取り直せなかったとき', () => {
+  it('外部の変更で取り直せなくても、投げずに通知し、いまのツリーを残す', async () => {
+    const tree = useApp.getState().tree
+    vi.spyOn(mock, 'listTree').mockRejectedValueOnce(new BackendError('io', 'not yet implemented'))
+    await useApp.getState().handleExternalChange()
+    expect(useApp.getState().tree).toBe(tree)
+    expect(useApp.getState().notice).toMatchObject({ tone: 'warning', title: 'ページの一覧を読み直せませんでした' })
+  })
+})
+
+describe('保管庫にできないフォルダ', () => {
+  it('indexOverlapsVault なら切り替えずに知らせる', async () => {
+    vi.spyOn(console, 'warn').mockImplementation(() => {})
+    const page = useApp.getState().page
+    const tree = useApp.getState().tree
+    vi.spyOn(mock, 'openVault').mockRejectedValueOnce(new BackendError('indexOverlapsVault', 'index dir overlaps vault: /x'))
+    await useApp.getState().openVault()
+    expect(useApp.getState()).toMatchObject({ status: 'ready', page, tree })
+    expect(useApp.getState().notice).toMatchObject({
+      tone: 'warning',
+      title: 'このフォルダは保管庫にできません。別のフォルダを選んでください。',
+    })
+    expect(JSON.stringify(useApp.getState().notice)).not.toContain('index dir')
+  })
+
+  it('ほかの失敗でも、バックエンドの文は通知に出さない', async () => {
+    vi.spyOn(console, 'warn').mockImplementation(() => {})
+    vi.spyOn(mock, 'createPage').mockRejectedValueOnce(new BackendError('io', 'Permission denied (os error 13)'))
+    await useApp.getState().createPage(null, 'x')
+    expect(useApp.getState().notice).toMatchObject({ title: 'ページを作れませんでした', body: 'ファイルの読み書きに失敗しました。もう一度お試しください。' })
+  })
+})
+
+describe('移動', () => {
+  it('開いているページをフォルダへ動かすと、新しい path で開いたままになる', async () => {
+    await app().openPage('仕事/企画/新しいプロダクトの考え方.md')
+    const next = await app().moveEntry('仕事/企画/新しいプロダクトの考え方.md', '学び/技術')
+    expect(next).toBe('学び/技術/新しいプロダクトの考え方.md')
+    expect(app().page?.path).toBe(next)
+    expect(app().selectedPath).toBe(next)
+    expect(treeHas('仕事/企画/新しいプロダクトの考え方.md')).toBe(false)
+    expect(treeHas('学び/技術/新しいプロダクトの考え方.md')).toBe(true)
+  })
+
+  it('ページの下へ動かすと、そのページの子になる', async () => {
+    const next = await app().moveEntry('学び/技術/技術調査メモ.md', '学び/技術/プロダクト開発のメモ.md')
+    expect(next).toBe('学び/技術/プロダクト開発のメモ/技術調査メモ.md')
+    expect(treeHas(next!)).toBe(true)
+  })
+
+  it('フォルダを動かすと、中の開いているページも新しい path になる', async () => {
+    await app().openPage('学び/技術/技術調査メモ.md')
+    expect(await app().moveEntry('学び/技術', null)).toBe('技術')
+    expect(app().page?.path).toBe('技術/技術調査メモ.md')
+  })
+
+  it('同じ名前があるときは知らせて、動かさない', async () => {
+    await app().newPage({ folder: '学び/技術' })
+    await app().newPage({ folder: '学び/デザイン' })
+    expect(await app().moveEntry('学び/技術/無題.md', '学び/デザイン')).toBeNull()
+    expect(app().notice?.title).toBe('移動先に同じ名前のものがあります')
+    expect(treeHas('学び/技術/無題.md')).toBe(true)
+  })
+
+  it('バックエンドの移動を待たずに、ツリーと選んでいる行を先に動かす', async () => {
+    await app().openPage('仕事/企画/新しいプロダクトの考え方.md')
+    const done = app().moveEntry('仕事/企画/新しいプロダクトの考え方.md', '学び/技術')
+    expect(treeHas('学び/技術/新しいプロダクトの考え方.md')).toBe(true)
+    expect(treeHas('仕事/企画/新しいプロダクトの考え方.md')).toBe(false)
+    expect(app().selectedPath).toBe('学び/技術/新しいプロダクトの考え方.md')
+    await done
+    expect(app().page?.path).toBe('学び/技術/新しいプロダクトの考え方.md')
+  })
+
+  it('動かせなかったら、先に動かしたツリーを元に戻す', async () => {
+    vi.spyOn(console, 'warn').mockImplementation(() => {})
+    vi.spyOn(mock, 'movePage').mockRejectedValueOnce(new BackendError('io', 'Permission denied (os error 13)'))
+    await app().openPage('仕事/企画/新しいプロダクトの考え方.md')
+    const before = app().tree
+    expect(await app().moveEntry('仕事/企画/新しいプロダクトの考え方.md', '学び/技術')).toBeNull()
+    expect(app().tree).toBe(before)
+    expect(app().selectedPath).toBe('仕事/企画/新しいプロダクトの考え方.md')
+    expect(app().notice?.title).toBe('移動できませんでした')
+  })
+
+  it('自分の中へは動かせない', async () => {
+    expect(await app().moveEntry('学び', '学び/技術')).toBeNull()
+    expect(app().notice?.title).toBe('移動できませんでした')
+  })
+})
+
+describe('名前を変える', () => {
+  it('名前を変え終えるまで保存を待たせ、新しい path に付け替えてから保存させる(元の名前に書いて「見つかりません」にならない)', async () => {
+    await app().openPage('仕事/企画/新しいプロダクトの考え方.md')
+    const log: string[] = []
+    let path = '仕事/企画/新しいプロダクトの考え方.md'
+    const session: ActiveSession = {
+      flush: async () => {},
+      isDirty: () => false,
+      current: () => ({ path, version: '' }),
+      overwriteWith: async () => {},
+      rebind: (oldPath, newPath) => {
+        if (oldPath !== path) return false
+        log.push(`rebind ${newPath}`)
+        path = newPath
+        return true
+      },
+      beginMove: (oldPath, newPath) => {
+        log.push(`hold ${oldPath === newPath ? 'same' : newPath}`)
+        return () => log.push(`release ${path}`)
+      },
+      setIcon: () => false,
+    }
+    setActiveSession(session)
+    try {
+      const meta = await app().renamePage('仕事/企画/新しいプロダクトの考え方.md', '考え方')
+      expect(meta?.path).toBe('仕事/企画/考え方.md')
+      expect(log).toEqual(['hold same', 'rebind 仕事/企画/考え方.md', 'release 仕事/企画/考え方.md'])
+    } finally {
+      setActiveSession(null)
+    }
+  })
+
+  it('変えられなかったときも、待たせた保存を元の path のまま再開する', async () => {
+    vi.spyOn(console, 'warn').mockImplementation(() => {})
+    vi.spyOn(mock, 'renamePage').mockRejectedValueOnce(new BackendError('nameOccupied'))
+    await app().openPage('仕事/企画/新しいプロダクトの考え方.md')
+    const released: boolean[] = []
+    setActiveSession({
+      flush: async () => {},
+      isDirty: () => false,
+      current: () => null,
+      overwriteWith: async () => {},
+      rebind: () => false,
+      beginMove: () => (ok) => released.push(ok),
+      setIcon: () => false,
+    })
+    try {
+      expect(await app().renamePage('仕事/企画/新しいプロダクトの考え方.md', '考え方')).toBeNull()
+      expect(released).toEqual([true])
+    } finally {
+      setActiveSession(null)
+    }
+  })
+})

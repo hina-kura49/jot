@@ -1,0 +1,1235 @@
+@import 'tailwindcss';
+
+/* デザイントークン。アプリのアイコンに合わせた青を基調にする(透けない)。ダークは macOS の外観の設定に従う */
+/*
+ * 合字(Ghostty と同じ JetBrains Mono)。-> → / >= ≥ / != ≠ のように見せるだけで、ファイルの中身は変えない。
+ * フォントはアプリに同梱する(ネットから読まない)。読み込みを待ってから描く(main.tsx)ので、文字の幅は途中で変わらない。
+ * ライセンスは assets/fonts/JetBrainsMono-LICENSE.txt(SIL Open Font License)。
+ */
+@font-face {
+  font-family: 'JetBrains Mono';
+  src: url('./assets/fonts/jetbrains-mono-latin-wght-normal.woff2') format('woff2');
+  font-weight: 100 800;
+  font-display: block;
+}
+/* 本文用: 合字になる記号 ! - < = > だけをこのフォントで描く(同じフォントの文字どうしでないと合字にならない) */
+@font-face {
+  font-family: 'Jot Symbols';
+  src: url('./assets/fonts/jetbrains-mono-latin-wght-normal.woff2') format('woff2');
+  font-weight: 100 800;
+  font-display: block;
+  unicode-range: U+0021, U+002D, U+003C-003E;
+}
+
+:root {
+  color-scheme: light dark;
+  --bg: #e9f0fb; /* サイドバーと入力欄の面 */
+  --panel: #fbfcff; /* 本文とポップアップの面 */
+  --text: #0e1a33;
+  --muted: #586885;
+  --border: rgb(50 90 170 / 0.18);
+  --line: #2563eb; /* 輪郭を強く見せる線 */
+  --accent: #2563eb;
+  --accent-gradient: linear-gradient(135deg, #2f74f2, #1d4fd8); /* 選んでいる行(アイコンの青) */
+  --on-accent: #ffffff; /* accent の上に置く文字と印 */
+  --focus: #2563eb;
+  --warning: #f59e0b;
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+
+  --radius-sm: 6px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+
+  --text-sm: 12px;
+  --text-base: 14px;
+  --text-lg: 16px;
+  --text-xl: 20px;
+  --text-2xl: 28px;
+  --text-title: 40px; /* ページのタイトル(Notion と同じ大きさ) */
+
+  /* 影はやわらかくぼかし、青みを少し混ぜて、面が浮いて見えるようにする */
+  --shadow-sm: 0 2px 8px rgb(20 50 120 / 0.1);
+  --shadow-md: 0 8px 24px rgb(20 50 120 / 0.16);
+  --shadow-lg: 0 18px 48px rgb(20 50 120 / 0.24);
+
+  --motion-fast: 150ms;
+  --motion-normal: 200ms;
+
+  /* アニメーションの長さ。Notion のように、出入りや移動をなめらかにつなぐ(打鍵への反応は遅らせない) */
+  --duration-hover: 140ms; /* ホバーと選択中の背景色 */
+  --duration-check: 180ms; /* チェックボックス */
+  --duration-tree: 220ms; /* ツリーの開閉 */
+  --duration-sidebar: 280ms; /* サイドバーの開閉 */
+  --duration-menu: 180ms; /* スラッシュメニュー・書式メニュー */
+  --duration-palette: 200ms; /* コマンドパレット */
+  --duration-drag: 240ms; /* ブロックの並べ替え */
+  --duration-page: 240ms; /* ページを切り替えたときの本文の現れ方 */
+  --duration-handle: 160ms; /* ブロックのハンドルの出入りと、ブロック間の移動 */
+  --exit-ratio: 0.6; /* 出る動きは入る動きのこの割合の長さ */
+
+  /* イージング。入るときは減速、出るときは短く加速して消える、位置の移動はなめらかに止まる */
+  --ease-enter: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-exit: cubic-bezier(0.4, 0, 1, 1);
+  --ease-move: cubic-bezier(0.2, 0, 0, 1);
+  /* ばねの動き(わずかに行き過ぎて戻る) */
+  --ease-spring: linear(0, 0.21 6%, 0.69 18%, 0.96 29%, 1.06 38%, 1.07 45%, 1.03 56%, 1 70%, 0.995 82%, 1);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #121d35;
+    --panel: #0d1526;
+    --text: #e9f0ff;
+    --muted: #9aabc9;
+    --border: rgb(150 185 255 / 0.18);
+    --line: #6ea8ff;
+    --accent: #2f6bf0;
+    --accent-gradient: linear-gradient(135deg, #2f74f2, #1d4fd8);
+    --on-accent: #ffffff;
+    --focus: #6ea8ff;
+
+    --shadow-sm: 0 2px 8px rgb(0 0 0 / 0.3);
+    --shadow-md: 0 8px 24px rgb(0 0 0 / 0.42);
+    --shadow-lg: 0 18px 48px rgb(0 0 0 / 0.55);
+  }
+}
+
+/* Tailwind のクラスからトークンを使えるようにする(bg-panel, text-muted, rounded-md など) */
+@theme inline {
+  --color-bg: var(--bg);
+  --color-panel: var(--panel);
+  --color-text: var(--text);
+  --color-muted: var(--muted);
+  --color-border: var(--border);
+  --color-accent: var(--accent);
+  --color-on-accent: var(--on-accent);
+  --color-line: var(--line);
+  --color-focus: var(--focus);
+  --color-warning: var(--warning);
+
+  --radius-sm: var(--radius-sm);
+  --radius-md: var(--radius-md);
+  --radius-lg: var(--radius-lg);
+
+  --text-sm: var(--text-sm);
+  --text-base: var(--text-base);
+  --text-lg: var(--text-lg);
+  --text-xl: var(--text-xl);
+  --text-2xl: var(--text-2xl);
+
+  --shadow-sm: var(--shadow-sm);
+  --shadow-md: var(--shadow-md);
+  --shadow-lg: var(--shadow-lg);
+
+  /* Webフォントは使わない(読み込み完了時に文字幅が変わって本文がずれるのを避ける) */
+  /* 本文は記号(Jot Symbols)だけを JetBrains Mono で描き、-> や >= を合字にする。ほかの文字はシステムのフォントのまま */
+  --font-sans: 'Jot Symbols', -apple-system, BlinkMacSystemFont, 'Hiragino Sans', 'Hiragino Kaku Gothic ProN', sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+/* クイックキャプチャのウィンドウは、角の丸いパネルだけを見せる(パネルの外だけが透明) */
+html[data-window='capture'] body {
+  background: transparent;
+  overflow: hidden;
+}
+.capture-panel {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+  -webkit-font-smoothing: antialiased;
+}
+
+:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 1px;
+}
+
+/* 「視差効果を減らす」が有効なときは、位置の動きをやめて短いフェードだけにする(JS 側は lib/motion.ts) */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --duration-tree: 80ms;
+    --duration-sidebar: 80ms;
+    --duration-drag: 0ms;
+  }
+  .chevron,
+  .jot-editor li[data-item-type='task']::after {
+    transition-property: opacity !important;
+  }
+}
+
+/* サイドバー: transform で出し入れする。閉じる(出る)ときは短く */
+:root {
+  --sidebar-width: 240px;
+}
+.sidebar {
+  transition: transform var(--duration-sidebar) var(--ease-enter);
+}
+.sidebar[data-collapsed='true'] {
+  transform: translateX(-100%);
+  transition-duration: calc(var(--duration-sidebar) * var(--exit-ratio));
+  transition-timing-function: var(--ease-exit);
+}
+@media (prefers-reduced-motion: reduce) {
+  .sidebar {
+    transition-property: opacity;
+  }
+  .sidebar[data-collapsed='true'] {
+    transform: none;
+    opacity: 0;
+  }
+}
+
+/* エディタを包む領域。左右の余白(ハンドルを置く場所)も含める */
+.editor-host {
+  margin-inline: calc(-1 * var(--space-6));
+  padding-inline: var(--space-6);
+}
+
+/* スラッシュメニュー・書式メニュー */
+.editor-popover {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow:
+    var(--shadow-md),
+    0 0 0 0.5px var(--border);
+}
+
+
+/* コマンドパレット(デザイン 4) */
+.palette {
+  box-shadow:
+    var(--shadow-lg),
+    0 0 0 0.5px var(--border);
+}
+/* 入力欄はパレットそのものが入力位置を示すので、枠は出さない */
+.palette [cmdk-input]:focus-visible {
+  outline: none;
+}
+.palette [cmdk-group-heading] {
+  padding: 8px 8px 4px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.palette-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 2px;
+  padding: 6px 8px;
+  border-radius: var(--radius-sm);
+  font-size: var(--text-base);
+  cursor: default;
+  transition: background-color var(--duration-hover) var(--ease-move);
+}
+.palette-item[data-selected='true'] {
+  background: var(--accent-gradient);
+  color: var(--on-accent);
+}
+.palette-item[data-selected='true'] :is(.text-muted, .palette-keys) {
+  color: color-mix(in srgb, var(--on-accent) 65%, transparent);
+  border-color: color-mix(in srgb, var(--on-accent) 35%, transparent);
+}
+.palette-item[data-selected='true'] .palette-hit {
+  background: color-mix(in srgb, var(--on-accent) 25%, transparent);
+  color: inherit;
+}
+.palette-keys {
+  flex-shrink: 0;
+  padding: 1px 6px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--muted);
+}
+/* 当たった部分だけを強調する。太さは変えない(幅がずれないように) */
+.palette-hit {
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+  color: var(--text);
+  box-shadow: inset 0 -2px 0 var(--line);
+}
+
+/* ブロックのドラッグ(デザイン 3)。ブロックの動きと持ち上げた見た目は block-drag.ts(エディタの中の要素には書き込まない) */
+.drag-handle {
+  cursor: grab;
+  /* 下の本文が透けないように、背景を塗る */
+  background: var(--panel);
+  /* 現れるときはふわっと出し、別のブロックへ移るときは位置を滑らせる */
+  animation: handle-in var(--duration-handle) var(--ease-enter);
+  transition:
+    top var(--duration-handle) var(--ease-move),
+    left var(--duration-handle) var(--ease-move),
+    background-color var(--duration-hover) var(--ease-move);
+}
+.drag-handle:hover {
+  background: color-mix(in srgb, var(--accent) 16%, var(--panel));
+}
+@keyframes handle-in {
+  from {
+    opacity: 0;
+    transform: translateX(4px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .drag-handle {
+    animation-name: fade-in;
+    transition-property: background-color;
+  }
+}
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}
+/* サイドバーの幅を変えている間: ポインタの形を保ち、文字を選ばず、サイドバーと本文の動きを止める */
+body.sidebar-resizing,
+body.sidebar-resizing * {
+  cursor: col-resize !important;
+  user-select: none;
+}
+body.sidebar-resizing :is(.sidebar, main) {
+  transition: none !important;
+}
+/* つまみの位置に、細い線をうっすら出す */
+.sidebar-resize::after {
+  content: '';
+  position: absolute;
+  inset-block: 0;
+  left: 50%;
+  width: 2px;
+  transform: translateX(-50%);
+  background: var(--line);
+  opacity: 0;
+  transition: opacity var(--duration-hover);
+}
+.sidebar-resize:hover::after,
+body.sidebar-resizing .sidebar-resize::after {
+  opacity: 0.25;
+}
+
+body.block-drag-active,
+body.block-drag-active * {
+  cursor: grabbing !important;
+  user-select: none;
+}
+
+/* ツリーの行をつかんで動かしているとき(tree-drag.ts) */
+body.tree-dragging,
+body.tree-dragging * {
+  cursor: grabbing !important;
+  user-select: none;
+}
+/* つかんでいる行は薄くする */
+.tree-row[data-dragging] {
+  opacity: 0.4;
+}
+/* この行の中へ入れる */
+.tree-row[data-drop='into'] {
+  box-shadow: inset 0 0 0 2px var(--focus);
+  background: color-mix(in srgb, var(--focus) 10%, transparent);
+}
+/* この行と同じ場所へ入れる */
+.tree-drop-line {
+  position: absolute;
+  right: 4px;
+  height: 2px;
+  border-radius: 1px;
+  background: var(--focus);
+  pointer-events: none;
+}
+/* いちばん上の階層へ入れる(行のない下の空白に重ねたとき) */
+[data-drop='root'] {
+  box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--focus) 50%, transparent);
+}
+/* マウスに付いてくる、つかんでいるものの名前 */
+.tree-drag-ghost {
+  position: fixed;
+  z-index: 60;
+  max-width: 220px;
+  padding: 2px 8px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--panel);
+  box-shadow: var(--shadow-lg);
+  font-size: 13px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  pointer-events: none;
+}
+
+/* ツリーのいまの行(キーボードで操作しているとき) */
+.tree:focus-visible .tree-row[data-active] {
+  box-shadow: inset 0 0 0 2px var(--focus);
+}
+
+/* 通知(デザイン 7)。warning は琥珀色、info は控えめな色 */
+.notice {
+  background: color-mix(in srgb, var(--warning) 12%, var(--panel));
+  border-color: color-mix(in srgb, var(--warning) 35%, var(--panel));
+  border-radius: var(--radius-md);
+}
+.notice .notice-icon {
+  border-radius: var(--radius-sm);
+  background: var(--warning);
+  color: #0a0a0a;
+}
+.notice[data-tone='info'] {
+  background: var(--panel);
+  border-color: var(--border);
+}
+.notice[data-tone='info'] .notice-icon {
+  background: var(--accent);
+  color: var(--on-accent);
+}
+
+/* 小さな見出し・パンくずなどの文字(等幅で字間を空け、図面の注記のように見せる) */
+.label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* ホバーと選択中の背景色の変化 */
+.hover-fade {
+  transition:
+    background-color var(--duration-hover) var(--ease-move),
+    color var(--duration-hover) var(--ease-move);
+}
+
+/* ツリーの矢印は、1つのアイコンを回転させる(途中で逆に操作しても今の角度から戻る) */
+.chevron {
+  transition: transform var(--duration-tree) var(--ease-move);
+}
+.chevron[data-open='true'] {
+  transform: rotate(90deg);
+}
+
+/* ---------------------------------------------------------------
+ * 本文の組み方。出発点の値で、すべて変数にして後から変えられるようにしている。
+ * デザインのトークンにある値はトークンを使う(本文 16px = --text-lg、見出し3 20px = --text-xl、間隔 8px = --space-2)
+ * --------------------------------------------------------------- */
+:root {
+  --body-size: var(--text-lg);
+  --body-line: 1.5;
+  --measure: 720px; /* 文章(段落・見出し・リスト・引用)の幅の上限 */
+  --wide-measure: 900px; /* 表・コード・画像が、収まらないときに限り広がれる上限 */
+  --block-gap: calc(var(--body-size) * 0.5);
+
+  --h1-size: calc(var(--body-size) * 1.875);
+  --h2-size: calc(var(--body-size) * 1.5);
+  --h3-size: var(--text-xl); /* = 本文の 1.25 倍 */
+  --heading-line: 1.3;
+  --heading-weight: 700;
+  --heading-tracking: -0.02em;
+  --heading-space-above: calc(var(--body-size) * 1.5);
+  --heading-space-below: var(--block-gap);
+
+  --strong-weight: 600;
+  --code-size: 0.875em;
+  --code-line: 1.6;
+  --code-bg: color-mix(in srgb, var(--border) 35%, var(--panel));
+
+  /* コードの「窓」(Wryte と同じ見た目)。明るい画面でも暗い画面でも、同じ暗い面に描く */
+  --code-window-bg: #242a25;
+  --code-window-border: #343b33;
+  --code-window-rule: #ffffff0d; /* 帯とコードの境の線 */
+  --code-window-text: #dfe4d9;
+  --code-window-muted: #909b8d; /* 帯の文字とボタン */
+  --code-window-radius: 7px;
+}
+
+/* Webフォントは使わない(合字用に同梱した JetBrains Mono だけは例外)。太字・斜体を機械的に作らない(ヒラギノの W6 で表示させる) */
+html {
+  font-synthesis: none;
+  font-feature-settings: normal; /* palt を当てない */
+}
+
+.page {
+  max-width: calc(var(--wide-measure) + 2 * var(--space-6));
+  margin: 0 auto;
+  padding: var(--space-6) var(--space-6) 30vh;
+}
+
+/* 文章は --measure まで。中央に置き、ウィンドウが狭いときは左右の余白(.page の padding)を保って縮む */
+.page-title,
+.jot-editor .ProseMirror > * {
+  max-width: var(--measure);
+  margin-inline: auto;
+}
+
+/* 表・コード・画像は、収まるときは文章の幅に揃え、収まらないときだけ --wide-measure まで左右均等に広がる */
+.jot-editor .ProseMirror > :is(pre, .code-block, table, .tableWrapper) {
+  width: max-content;
+  min-width: min(100%, var(--measure));
+  max-width: min(100%, var(--wide-measure));
+}
+.jot-editor .tableWrapper > table {
+  width: 100%;
+}
+/* 画像だけの段落は広い幅を使えるようにし、画像の枠の幅は plugins.ts が決める */
+.jot-editor .ProseMirror > p:has(> .image-block) {
+  max-width: min(100%, var(--wide-measure));
+}
+
+.page-title {
+  margin-top: var(--space-5);
+  margin-bottom: var(--space-5);
+  font-size: var(--text-title);
+  font-weight: var(--heading-weight);
+  letter-spacing: var(--heading-tracking);
+  line-height: var(--heading-line);
+  line-break: strict;
+  overflow-wrap: anywhere;
+}
+/* ページの中を探す(find.ts)。当たったところと、いまの1つ */
+.find-hit {
+  background: color-mix(in srgb, var(--warning) 28%, transparent);
+  border-radius: 2px;
+}
+.find-hit-current {
+  background: color-mix(in srgb, var(--warning) 70%, transparent);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--warning) 90%, transparent);
+}
+
+/* Vim のキー操作(src/editor/vim/)。ノーマル・ビジュアルモードのカーソルと選んだ範囲、右下のモードの表示 */
+.jot-vim.vim-mode-normal,
+.jot-vim.vim-mode-visual,
+.jot-vim.vim-mode-vline {
+  caret-color: transparent;
+  outline: none;
+}
+.jot-vim.vim-mode-visual ::selection,
+.jot-vim.vim-mode-vline ::selection {
+  background: transparent;
+}
+.jot-vim .vim-cursor {
+  background: color-mix(in srgb, var(--accent) 55%, transparent);
+  border-radius: 1px;
+}
+.jot-vim:not(.ProseMirror-focused) .vim-cursor {
+  background: transparent;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 60%, transparent);
+}
+.jot-vim .vim-cursor-eol {
+  display: inline-block;
+  width: 0.6em;
+}
+.jot-vim .vim-visual {
+  background: color-mix(in srgb, var(--accent) 22%, transparent);
+}
+.jot-vim .vim-visual .vim-cursor,
+.jot-vim .vim-visual-line .vim-cursor {
+  background: color-mix(in srgb, var(--accent) 55%, transparent);
+}
+.jot-vim .vim-visual-line {
+  background: color-mix(in srgb, var(--accent) 16%, transparent);
+  border-radius: 3px;
+}
+.vim-status {
+  position: fixed;
+  right: 14px;
+  bottom: 10px;
+  z-index: 40;
+  padding: 2px 8px;
+  border-radius: 6px;
+  font: 600 11px/18px 'JetBrains Mono', ui-monospace, monospace;
+  letter-spacing: 0.04em;
+  white-space: pre;
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 10%, var(--panel, transparent));
+  pointer-events: none;
+}
+.vim-status[data-mode='insert'] {
+  color: var(--muted);
+  background: color-mix(in srgb, currentColor 8%, transparent);
+}
+.vim-status[data-mode='visual'],
+.vim-status[data-mode='vline'] {
+  color: var(--warning, var(--accent));
+}
+.vim-status[hidden] {
+  display: none;
+}
+
+/* 上の帯の検索窓。狭いときは虫眼鏡だけにする */
+@media (max-width: 720px) {
+  .search-field {
+    width: auto;
+  }
+  .search-field > :not(svg) {
+    display: none;
+  }
+}
+
+/* ページのアイコン(PageIcon.tsx)。タイトルと同じ左端に置く */
+.page-icon {
+  max-width: var(--measure);
+  margin: var(--space-5) auto calc(-1 * var(--space-4));
+}
+.page-icon-emoji {
+  display: block;
+  padding: 2px 6px;
+  margin-left: -6px;
+  font-size: 64px;
+  line-height: 1.15;
+}
+/* アイコンがないときは場所を取らない(タイトルの位置を変えない)。「アイコンを追加」はタイトルの上の余白に重ねる */
+.page-icon:not(:has(.page-icon-emoji)) {
+  height: 0;
+  margin-block: 0;
+}
+/* 「アイコンを追加」は、ページの上にマウスを乗せたとき(とキーボードで選んだとき)だけ出す */
+.page-icon-add {
+  position: absolute;
+  top: 0;
+  left: -6px;
+  opacity: 0;
+}
+.page:hover .page-icon-add,
+.page-icon-add:focus-visible {
+  opacity: 1;
+}
+/* サイドバーの行の絵文字。行の高さに合わせて少し小さく */
+.tree-icon {
+  font-size: 13px;
+  line-height: 1;
+}
+
+/* タイトルの下に短い太線を引き、本文との境目にする */
+.page-title::after {
+  content: '';
+  display: block;
+  width: 32px;
+  height: 3px;
+  margin-top: var(--space-4);
+  background: var(--line);
+}
+
+.jot-editor .ProseMirror {
+  outline: none;
+  /* ProseMirror は合字を切っている(fi などでカーソルの位置がずれるため)。JetBrains Mono の記号の合字(calt)だけを戻す */
+  font-variant-ligatures: contextual;
+  font-size: var(--body-size);
+  line-height: var(--body-line);
+  line-break: strict;
+  overflow-wrap: anywhere;
+  word-break: normal;
+}
+
+.jot-editor .ProseMirror > * + *,
+.jot-editor .ProseMirror li > * + *,
+.jot-editor .ProseMirror blockquote > * + * {
+  margin-top: var(--block-gap);
+}
+.jot-editor .ProseMirror > * {
+  margin-bottom: 0;
+}
+.jot-editor p {
+  margin: 0;
+}
+
+/* 見出し: 上の余白を下より広くして、次の本文に属して見えるようにする */
+.jot-editor h1,
+.jot-editor h2,
+.jot-editor h3,
+.jot-editor h4,
+.jot-editor h5,
+.jot-editor h6 {
+  font-weight: var(--heading-weight);
+  letter-spacing: var(--heading-tracking);
+  line-height: var(--heading-line);
+}
+.jot-editor .ProseMirror > :is(h1, h2, h3, h4, h5, h6) {
+  margin-top: var(--heading-space-above);
+}
+.jot-editor .ProseMirror > :is(h1, h2, h3, h4, h5, h6):first-child {
+  margin-top: 0;
+}
+.jot-editor .ProseMirror > :is(h1, h2, h3, h4, h5, h6) + * {
+  margin-top: var(--heading-space-below);
+}
+.jot-editor h1 {
+  font-size: var(--h1-size);
+}
+.jot-editor h2 {
+  font-size: var(--h2-size);
+  padding-bottom: 0.35em;
+  border-bottom: 1px solid var(--border);
+}
+.jot-editor h3 {
+  font-size: var(--h3-size);
+}
+.jot-editor h4,
+.jot-editor h5,
+.jot-editor h6 {
+  font-size: var(--body-size);
+}
+
+.jot-editor strong {
+  font-weight: var(--strong-weight);
+}
+.jot-editor a {
+  color: var(--line);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+
+/* リスト */
+.jot-editor ul,
+.jot-editor ol {
+  margin: 0;
+  padding-left: 1.5em;
+}
+.jot-editor ul {
+  list-style: disc;
+}
+.jot-editor ul ul {
+  list-style: circle;
+}
+.jot-editor ol {
+  list-style: decimal;
+}
+.jot-editor li::marker {
+  color: var(--muted);
+}
+
+/* チェックリスト。チェックボックスは CSS で描き、左端のクリックで切り替える(plugins.ts) */
+.jot-editor li[data-item-type='task'] {
+  list-style: none;
+  position: relative;
+  padding-left: 1.75em;
+  margin-left: -1.5em;
+}
+.jot-editor li[data-item-type='task']::before,
+.jot-editor li[data-item-type='task']::after {
+  content: '';
+  position: absolute;
+  left: 0.15em;
+  top: calc((var(--body-line) * 1em - 1.05em) / 2);
+  width: 1.05em;
+  height: 1.05em;
+  box-sizing: border-box;
+  border: 1.5px solid var(--line);
+  border-radius: 4px;
+  cursor: pointer;
+}
+.jot-editor li[data-item-type='task']::before {
+  transition:
+    background-color var(--duration-check) var(--ease-move),
+    border-color var(--duration-check) var(--ease-move);
+}
+.jot-editor li[data-item-type='task'][data-checked='true']::before {
+  border-color: var(--accent);
+  background-color: var(--accent);
+}
+/* チェックの印。チェック時は拡大しながら現れ、外すときは短く消える */
+.jot-editor li[data-item-type='task']::after {
+  border: 0;
+  /* 印の色を accent の上の色に合わせるため、形は mask で抜く(ダークでも見える) */
+  background: var(--on-accent);
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M3.5 8.5l3 3 6-7' fill='none' stroke='black' stroke-width='2' stroke-linecap='square' stroke-linejoin='miter'/%3E%3C/svg%3E")
+    center / 80% no-repeat;
+  opacity: 0;
+  transform: scale(0.6);
+  pointer-events: none;
+  transition:
+    opacity calc(var(--duration-check) * var(--exit-ratio)) var(--ease-exit),
+    transform calc(var(--duration-check) * var(--exit-ratio)) var(--ease-exit);
+}
+.jot-editor li[data-item-type='task'][data-checked='true']::after {
+  opacity: 1;
+  transform: none;
+  transition:
+    opacity var(--duration-check) var(--ease-enter),
+    transform var(--duration-check) var(--ease-enter);
+}
+
+/* 引用: 淡い面に載せ、左に色の線を引く。和文の斜体は機械的な変形になるので使わない */
+.jot-editor blockquote {
+  margin: 0;
+  padding: var(--space-3) var(--space-4);
+  border-left: 2px solid var(--line);
+  background: var(--code-bg);
+  color: var(--muted);
+  font-size: 0.9em;
+}
+
+/* コード */
+.jot-editor code,
+.jot-editor pre {
+  font-family: var(--font-mono);
+}
+/* 行内のコード: 淡い面に、色の付いた文字 */
+.jot-editor :not(pre) > code {
+  font-size: var(--code-size);
+  padding: 0.1em 0.35em;
+  border-radius: 3px;
+  background: var(--code-bg);
+  color: var(--line);
+}
+/* コードの面。窓の中のコードも、数式や図の原文も同じ暗い面に描く */
+.jot-editor pre {
+  margin: 0;
+  padding: var(--space-4) var(--space-5);
+  border: 1px solid var(--code-window-border);
+  border-radius: var(--code-window-radius);
+  background: var(--code-window-bg);
+  color: var(--code-window-text);
+  font-size: var(--code-size);
+  line-height: 1.8;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.jot-editor pre code {
+  font-size: inherit;
+}
+.jot-editor pre ::selection {
+  background: rgb(255 255 255 / 0.22);
+}
+
+/* コードの「窓」(code-window.ts): 上の帯に 3つの丸・言語・コピーのボタン */
+.jot-editor .code-block {
+  border: 1px solid var(--code-window-border);
+  border-radius: var(--code-window-radius);
+  overflow: hidden;
+  background: var(--code-window-bg);
+  color: var(--code-window-text);
+}
+.jot-editor .code-block > pre {
+  border: 0;
+  border-radius: 0;
+  background: none;
+}
+.jot-editor .code-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  height: 37px;
+  padding: 0 var(--space-3);
+  border-bottom: 1px solid var(--code-window-rule);
+  color: var(--code-window-muted);
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  line-height: 1;
+  user-select: none;
+}
+.jot-editor .window-dots {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.jot-editor .window-dots > i {
+  display: block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #596052;
+}
+.jot-editor .window-dots > i:nth-child(2) {
+  background: #70745e;
+}
+.jot-editor .window-dots > i:nth-child(3) {
+  background: #808873;
+}
+.jot-editor .code-language {
+  flex: 1;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  outline: none;
+  background: none;
+  color: #a6b09e;
+  font: inherit;
+}
+.jot-editor .code-language::placeholder {
+  color: #6f7869;
+}
+.jot-editor .code-language:focus {
+  color: var(--code-window-text);
+}
+.jot-editor .code-copy {
+  display: flex;
+  padding: var(--space-1);
+  margin-right: calc(var(--space-1) * -1);
+  border-radius: 4px;
+  color: inherit;
+  cursor: pointer;
+  transition: color var(--duration-hover);
+}
+.jot-editor .code-copy:hover,
+.jot-editor .code-copy[data-copied] {
+  color: var(--code-window-text);
+}
+
+/* 色付けは文字色だけ(太さ・字形を変えないので、行の高さや幅が変わらない) */
+.jot-editor .hljs-comment,
+.jot-editor .hljs-quote {
+  color: #85937b;
+}
+.jot-editor .hljs-keyword,
+.jot-editor .hljs-selector-tag,
+.jot-editor .hljs-literal {
+  color: #d7a784;
+}
+.jot-editor .hljs-string,
+.jot-editor .hljs-regexp,
+.jot-editor .hljs-symbol {
+  color: #becba0;
+}
+.jot-editor .hljs-number,
+.jot-editor .hljs-built_in,
+.jot-editor .hljs-type,
+.jot-editor .hljs-attr {
+  color: #cbbb8f;
+}
+.jot-editor .hljs-title,
+.jot-editor .hljs-class,
+.jot-editor .hljs-function {
+  color: #d4dac2;
+}
+.jot-editor .hljs-params {
+  color: #bac9c0;
+}
+
+/* 表 */
+.jot-editor table {
+  border-collapse: collapse;
+  font-size: calc(var(--body-size) * 0.875);
+  line-height: 1.6;
+}
+.jot-editor th,
+.jot-editor td {
+  border: 1px solid var(--border);
+  padding: var(--space-2) var(--space-3);
+  text-align: left;
+  vertical-align: top;
+  min-width: 60px;
+}
+.jot-editor th {
+  font-weight: var(--strong-weight);
+  background: var(--code-bg);
+}
+.jot-editor td p,
+.jot-editor th p {
+  margin: 0;
+}
+
+/* 区切り線 */
+.jot-editor .ProseMirror > hr {
+  border: 0;
+  border-top: 1px solid var(--border);
+  margin-block: var(--space-5);
+}
+
+/* 画像: 読み込み前から枠を確保する(plugins.ts) */
+.jot-editor .image-block {
+  display: block;
+  /* --image-width は覚えている実際の幅。初めての画像は文章の幅 */
+  width: clamp(min(100%, var(--measure)), var(--image-width, var(--measure)), 100%);
+  margin-inline: auto;
+}
+.jot-editor .image-frame {
+  display: block;
+  width: 100%;
+  overflow: hidden;
+  border-radius: 6px;
+  background: var(--code-bg);
+}
+.jot-editor .image-frame img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+.jot-editor .image-unavailable {
+  display: flex;
+  height: 100%;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--text-sm);
+  color: var(--muted);
+}
+.jot-editor .image-caption {
+  display: block;
+  margin-top: var(--space-1);
+  font-size: var(--text-sm);
+  color: var(--muted);
+}
+
+/* エディタが表現できない記法: 編集できないコード風のブロック / 行内の部品として原文のまま見せる */
+.jot-editor .raw-block,
+.jot-editor span[data-type='html'] {
+  font-family: var(--font-mono);
+  color: var(--muted);
+  background: var(--code-bg);
+  border: 1px dashed var(--border);
+}
+.jot-editor .raw-block {
+  cursor: default;
+  border-radius: 0;
+}
+.jot-editor span[data-type='html'] {
+  font-size: var(--code-size);
+  padding: 0 0.3em;
+}
+.jot-editor .ProseMirror-selectednode {
+  outline: 2px solid var(--focus);
+}
+
+/* ---- コールアウト・トグル・数式のブロック(callout.ts、markdown.ts) ---- */
+/* 色は既存のトークンだけを使う。余白は詳細度を 0 にして、本文の中央ぞろえとブロックの間隔(.ProseMirror > *)を優先する */
+:where(.jot-editor .callout) {
+  margin: 0;
+}
+.jot-editor .callout > * + * {
+  margin-top: var(--block-gap);
+}
+.jot-editor .callout-title {
+  position: relative;
+  font-weight: var(--strong-weight);
+}
+/* 空のタイトルの行の案内(トグルは「トグル」、コールアウトは Obsidian と同じく種類の名前) */
+.jot-editor .callout-title.is-empty::before {
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  color: var(--muted);
+  font-weight: normal;
+  pointer-events: none;
+}
+.jot-editor .callout:not([data-toggle]) > .callout-title.is-empty::before {
+  text-transform: capitalize;
+}
+
+/* コールアウト: 枠で囲む */
+.jot-editor .callout:not([data-toggle]) {
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--code-bg);
+}
+
+/* トグル: タイトルの左の三角で開閉する。中身はタイトルの文字の位置にそろえる */
+.jot-editor .callout[data-toggle] {
+  --toggle-indent: 1.5em;
+}
+.jot-editor .callout[data-toggle] > .callout-title {
+  padding-left: var(--toggle-indent);
+}
+.jot-editor .callout[data-toggle] > .callout-title::after {
+  content: '';
+  position: absolute;
+  left: 0.4em;
+  top: calc(var(--body-line) * 0.5em - 0.35em);
+  border-left: 0.5em solid var(--muted);
+  border-block: 0.35em solid transparent;
+  transform: rotate(90deg);
+  transition: transform var(--duration-tree) var(--ease-move);
+  cursor: pointer;
+}
+.jot-editor .callout[data-toggle][data-open='false'] > .callout-title::after {
+  transform: none;
+}
+.jot-editor .callout[data-toggle] > :not(.callout-title) {
+  margin-left: var(--toggle-indent);
+}
+.jot-editor .callout[data-toggle][data-open='false'] > :not(.callout-title) {
+  display: none;
+}
+
+/* トグル見出し: タイトルの行を見出しの大きさにする */
+.jot-editor .callout[data-heading] > .callout-title {
+  line-height: var(--heading-line);
+  font-weight: var(--heading-weight);
+}
+.jot-editor .callout[data-heading] > .callout-title::after {
+  top: calc(var(--heading-line) * 0.5em - 0.35em);
+}
+.jot-editor .ProseMirror > .callout[data-heading] {
+  margin-top: var(--heading-space-above);
+}
+.jot-editor .ProseMirror > .callout[data-heading]:first-child {
+  margin-top: 0;
+}
+.jot-editor .callout[data-heading='1'] > .callout-title {
+  font-size: var(--h1-size);
+}
+.jot-editor .callout[data-heading='2'] > .callout-title {
+  font-size: var(--h2-size);
+}
+.jot-editor .callout[data-heading='3'] > .callout-title {
+  font-size: var(--h3-size);
+}
+
+/* 数式のブロック: TeX の原文を書く。左上に印を出して、コードブロックと見分けられるようにする */
+.jot-editor pre.math-block {
+  position: relative;
+  padding-top: calc(var(--space-3) + 1.4em);
+}
+.jot-editor pre.math-block::before {
+  content: '数式(TeX)';
+  position: absolute;
+  top: var(--space-2);
+  left: var(--space-5);
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+  color: var(--code-window-muted);
+  pointer-events: none;
+}
+
+/* Finder からファイルを落とすとき、ファイルが入る行に下線を引く(file-paste.ts) */
+.jot-editor .file-drop-target {
+  box-shadow: 0 2px 0 0 var(--focus);
+}
+
+/* Mermaid の図: 入力位置がないときは図だけ。押すと原文が上に開く(mermaid.ts) */
+.jot-editor .ProseMirror > .mermaid-block {
+  max-width: min(100%, var(--wide-measure));
+}
+.jot-editor .mermaid-block:not(.mermaid-editing, .mermaid-empty, .mermaid-failed) > pre {
+  display: none;
+}
+.jot-editor .mermaid-block > pre {
+  position: relative;
+  padding-top: calc(var(--space-3) + 1.4em);
+}
+.jot-editor .mermaid-block > pre::before {
+  content: '図(Mermaid)';
+  position: absolute;
+  top: var(--space-2);
+  left: var(--space-5);
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+  color: var(--code-window-muted);
+  pointer-events: none;
+}
+.jot-editor .mermaid-view {
+  padding: var(--space-3) 0;
+  cursor: pointer;
+  user-select: none;
+}
+.jot-editor .mermaid-editing > .mermaid-view {
+  cursor: default;
+}
+.jot-editor .mermaid-diagram {
+  display: flex;
+  justify-content: center;
+  overflow-x: auto;
+}
+.jot-editor .mermaid-diagram svg {
+  max-width: 100%;
+  height: auto;
+}
+.jot-editor .mermaid-failed .mermaid-diagram {
+  opacity: 0.4;
+}
+.jot-editor .mermaid-error {
+  font-size: var(--text-sm);
+  color: var(--muted);
+}
+.jot-editor .mermaid-error:empty,
+.jot-editor .mermaid-empty > .mermaid-view {
+  display: none;
+}
+
+/* ツリーの選んでいる行は青く塗る。行の中の薄い文字やアイコンも、青の上で読める色にそろえる */
+.tree-row-selected {
+  background: var(--accent-gradient);
+  box-shadow: inset 0 0.5px 0 rgb(255 255 255 / 0.3);
+}
+.tree-row-selected .text-muted {
+  color: color-mix(in srgb, var(--on-accent) 70%, transparent);
+}
+
+/* ---- PDF に書き出す(印刷)。本文とタイトルだけを、白い紙に黒い文字で出す ---- */
+@media print {
+  :root {
+    color-scheme: light;
+    --bg: #ffffff;
+    --panel: #ffffff;
+    --text: #0a0a0a;
+    --muted: #737373;
+    --border: #e3e3e3;
+    --line: #0a0a0a;
+    --accent: #0a0a0a;
+    --on-accent: #ffffff;
+  }
+  html,
+  body,
+  #root {
+    height: auto;
+    background: #fff;
+  }
+  /* サイドバー・パンくず・通知・ブロックのハンドルなど、操作のための部品は出さない */
+  .sidebar,
+  .no-print,
+  .drag-handle {
+    display: none !important;
+  }
+  /* 画面では高さを固定して中だけスクロールさせているので、紙では全体を流す */
+  #root > div,
+  main,
+  main > div {
+    display: block !important;
+    height: auto !important;
+    overflow: visible !important;
+    margin-left: 0 !important;
+  }
+  .page {
+    max-width: none;
+    padding: 0;
+    transform: none !important;
+  }
+  .page-title {
+    margin-top: 0;
+  }
+  .jot-editor :is(pre, table, blockquote, img, figure) {
+    break-inside: avoid;
+  }
+  .jot-editor :is(h1, h2, h3, h4) {
+    break-after: avoid;
+  }
+}
+
+/* ページでないファイル(PDF・HTML など)へのリンク。ファイルの印を付け、押すと開く(file-paste.ts) */
+.jot-editor .file-link {
+  cursor: pointer;
+}
+.jot-editor .file-link::before {
+  content: '';
+  display: inline-block;
+  width: 0.95em;
+  height: 0.95em;
+  margin-right: 0.25em;
+  vertical-align: -0.12em;
+  background: var(--muted);
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z'/%3E%3Cpath d='M14 2v4a2 2 0 0 0 2 2h4'/%3E%3C/svg%3E") center / contain no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z'/%3E%3Cpath d='M14 2v4a2 2 0 0 0 2 2h4'/%3E%3C/svg%3E") center / contain no-repeat;
+}

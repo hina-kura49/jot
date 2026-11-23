@@ -1,0 +1,48 @@
+[package]
+name = "jot"
+version = "0.1.0"
+description = "Jot のデスクトップアプリ(Tauri 2)。core/ の Vault をフロントエンドにつなぐ"
+edition = "2021"
+license = "MIT"
+publish = false
+
+[lib]
+name = "jot_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = ["macos-private-api", "protocol-asset"] }
+tauri-plugin-global-shortcut = "2"
+tauri-plugin-dialog = "2"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+# core/ は読むだけ(変更しない)。パッケージ名は jot-core
+jot-core = { path = "../core", optional = true }
+# 保管庫のフォルダの監視
+notify = { version = "8", optional = true }
+# Rust の型から TypeScript の型を作る(cargo test --features core で src/backend/generated/ に書き出す)
+ts-rs = { version = "12", optional = true }
+
+# PDF に書き出す(印刷ダイアログ)と、クリップボードの画像を読む(clipboard.rs)。WKWebView では window.print() が何もしないので、macOS の印刷の仕組みを直接呼ぶ。
+# Tauri(wry)がすでに使っている版にそろえる(アプリは大きくならない)
+[target.'cfg(target_os = "macos")'.dependencies]
+objc2-foundation = { version = "0.3", features = ["NSString", "NSGeometry", "NSObject", "NSURL", "NSData", "NSDictionary", "NSArray"] }
+objc2-app-kit = { version = "0.3", features = ["NSPrintInfo", "NSPrintOperation", "NSWindow", "NSResponder", "NSView", "NSPasteboard", "NSPasteboardItem", "NSBitmapImageRep", "NSImageRep"] }
+objc2-web-kit = { version = "0.3", features = ["WKWebView", "objc2-app-kit"] }
+
+# Dock がない OS で、もう一度起動されたら隠したウィンドウを出し直す(lib.rs)
+[target.'cfg(not(target_os = "macos"))'.dependencies]
+tauri-plugin-single-instance = "2"
+
+[features]
+# core/ につなぐ(npm run app:core)。付けないときは core をビルドしない(MockBackend で動かすときに、core の編集途中の状態に左右されない)
+core = ["dep:jot-core", "dep:notify", "dep:ts-rs"]
+
+# 本番用のビルドは、速さよりもアプリの小ささを優先する(プログラム全体をまとめて最適化し、デバッグ用の情報を除く)
+[profile.release]
+lto = true
+codegen-units = 1
+strip = true

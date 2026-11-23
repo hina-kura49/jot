@@ -1,0 +1,78 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "Jot",
+  "mainBinaryName": "jot",
+  "version": "0.1.0",
+  "identifier": "app.jot.notes",
+  "build": {
+    "beforeDevCommand": "npm run dev",
+    "devUrl": "http://localhost:5173",
+    "beforeBuildCommand": "npm run build",
+    "frontendDist": "../dist"
+  },
+  "app": {
+    "macOSPrivateApi": true,
+    "windows": [
+      {
+        "label": "main",
+        "title": "Jot",
+        "width": 1200,
+        "height": 800,
+        "minWidth": 640,
+        "minHeight": 480,
+        "titleBarStyle": "Overlay",
+        "hiddenTitle": true
+      },
+      {
+        "label": "capture",
+        "title": "クイックキャプチャ",
+        "url": "index.html?window=capture",
+        "width": 520,
+        "height": 180,
+        "center": true,
+        "visible": false,
+        "decorations": false,
+        "transparent": true,
+        "alwaysOnTop": true,
+        "resizable": false,
+        "skipTaskbar": true,
+        "shadow": true
+      }
+    ],
+    "security": {
+      "csp": {
+        "default-src": "'self'",
+        "script-src": "'self'",
+        "style-src": "'self' 'unsafe-inline'",
+        "img-src": "'self' asset: http://asset.localhost https: data: blob:",
+        "font-src": "'self' data:",
+        "connect-src": "'self' ipc: http://ipc.localhost asset: http://asset.localhost blob: data:",
+        "media-src": "'self' asset: http://asset.localhost blob:",
+        "object-src": "'none'",
+        "base-uri": "'none'",
+        "form-action": "'none'"
+      },
+      "devCsp": null,
+      "assetProtocol": {
+        "enable": true,
+        "scope": []
+      }
+    }
+  },
+  "bundle": {
+    "active": true,
+    "macOS": {
+      "signingIdentity": "-"
+    },
+    "targets": [
+      "app"
+    ],
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.png"
+    ]
+  }
+}
