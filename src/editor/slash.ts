@@ -126,6 +126,8 @@ export type SlashItem = {
   label: string
   /** 項目の右に添える補足(「/page」など) */
   hint?: string
+  /** メニューを開かずに同じブロックを作れる Markdown のショートカット(行頭で打つ文字)。項目の右に出す */
+  shortcut?: string
   /** 絞り込みに使う別名(ひらがな、英語) */
   aliases: string[]
 }
@@ -136,18 +138,18 @@ export type SlashItem = {
  */
 export const SLASH_ITEMS: SlashItem[] = [
   { id: 'text', label: 'テキスト', aliases: ['てきすと', 'ほんぶん', '本文', 'text', 'paragraph', 'plain', 'p'] },
-  { id: 'h1', label: '見出し1', aliases: ['みだし', 'heading', 'heading 1', 'h1', '#'] },
-  { id: 'h2', label: '見出し2', aliases: ['みだし', 'heading', 'heading 2', 'h2', '##'] },
-  { id: 'h3', label: '見出し3', aliases: ['みだし', 'heading', 'heading 3', 'h3', '###'] },
-  { id: 'bullet', label: 'リスト', aliases: ['りすと', '箇条書き', 'かじょうがき', 'list', 'bullet', 'bulleted list', 'ul'] },
-  { id: 'ordered', label: '番号付きリスト', aliases: ['ばんごう', 'number', 'numbered list', 'num', 'ordered', 'ol'] },
-  { id: 'task', label: 'チェックリスト', aliases: ['ちぇっく', 'たすく', 'todo', 'to-do list', 'task', 'check', 'checkbox', '[]'] },
+  { id: 'h1', label: '見出し1', shortcut: '#', aliases: ['みだし', 'heading', 'heading 1', 'h1', '#'] },
+  { id: 'h2', label: '見出し2', shortcut: '##', aliases: ['みだし', 'heading', 'heading 2', 'h2', '##'] },
+  { id: 'h3', label: '見出し3', shortcut: '###', aliases: ['みだし', 'heading', 'heading 3', 'h3', '###'] },
+  { id: 'bullet', label: 'リスト', shortcut: '-', aliases: ['りすと', '箇条書き', 'かじょうがき', 'list', 'bullet', 'bulleted list', 'ul'] },
+  { id: 'ordered', label: '番号付きリスト', shortcut: '1.', aliases: ['ばんごう', 'number', 'numbered list', 'num', 'ordered', 'ol'] },
+  { id: 'task', label: 'チェックリスト', shortcut: '[]', aliases: ['ちぇっく', 'たすく', 'todo', 'to-do list', 'task', 'check', 'checkbox', '[]'] },
   { id: 'toggle', label: 'トグルリスト', aliases: ['とぐる', 'おりたたみ', '折りたたみ', 'toggle', 'toggle list', '>'] },
   { id: 'callout', label: 'コールアウト', aliases: ['こーるあうと', 'callout', 'note'] },
-  { id: 'quote', label: '引用', aliases: ['いんよう', 'quote', 'blockquote', '"'] },
-  { id: 'code', label: 'コードブロック', aliases: ['こーど', 'code', 'pre', '```'] },
-  { id: 'table', label: '表', aliases: ['ひょう', 'てーぶる', 'table'] },
-  { id: 'divider', label: '区切り線', aliases: ['くぎりせん', 'divider', 'div', 'hr', 'line', '---'] },
+  { id: 'quote', label: '引用', shortcut: '"', aliases: ['いんよう', 'quote', 'blockquote', '"'] },
+  { id: 'code', label: 'コードブロック', shortcut: '```', aliases: ['こーど', 'code', 'pre', '```'] },
+  { id: 'table', label: '表', shortcut: '|3x3|', aliases: ['ひょう', 'てーぶる', 'table'] },
+  { id: 'divider', label: '区切り線', shortcut: '---', aliases: ['くぎりせん', 'divider', 'div', 'hr', 'line', '---'] },
   { id: 'image', label: '画像', aliases: ['がぞう', 'image', 'img', 'picture'] },
   { id: 'page', label: 'ページを作る', hint: '/page', aliases: ['ぺーじ', 'page', 'new'] },
   { id: 'mermaid', label: 'Mermaid の図', aliases: ['まーめいど', 'ず', '図', 'ふろーちゃーと', 'mermaid', 'diagram', 'chart', 'flowchart', 'graph'] },

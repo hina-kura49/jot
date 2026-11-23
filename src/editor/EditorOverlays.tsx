@@ -245,6 +245,11 @@ function SlashMenu({ editor, view, pagePath, host }: { editor: Editor; view: Edi
               <Icon size={16} className="shrink-0 text-muted" />
               {item.hint && <span className="text-muted">{item.hint}</span>}
               <span>{item.label}</span>
+              {item.shortcut && (
+                <kbd title="行頭で打つショートカット" className="palette-keys ml-auto shrink-0">
+                  {item.shortcut}
+                </kbd>
+              )}
             </button>
           )
         })
