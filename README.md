@@ -20,7 +20,7 @@ Built with Tauri 2, React and Rust. Runs on macOS and Linux.
 - **Quick capture.** A global hotkey opens a small window that appends to your inbox from any app.
 - **Vim mode.** Optional Vim keybindings that keep working while a Japanese IME is on.
 
-![Creating a heading from the slash menu and typing into a code block](docs/images/typing.gif)
+![Typing a heading, a paragraph and a code block: each turns into a block as you type](docs/images/typing.gif)
 
 ![The command palette listing matching pages and full-text results](docs/images/palette.png)
 
