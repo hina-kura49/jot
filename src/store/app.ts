@@ -3,7 +3,7 @@ import { backend, INBOX_PATH, isBackendError, toBackendError, type PageMeta, typ
 import { errorText, logError, textFor } from '@/lib/error-text'
 import CAPTURE_SHORTCUT from '@/capture/shortcut.json'
 import { activeSession, flushActive } from '@/editor/registry'
-import { createGuide, GUIDE_PATH } from './guide'
+import { createGuide, guidePath } from './guide'
 import { moveInTree, movedPath, remapPath } from './tree-move'
 
 export const RECENT_LIMIT = 20
@@ -167,7 +167,7 @@ export const useApp = create<AppState>()((set, get) => ({
 
   async openGuide() {
     try {
-      let path: string | null = findNode(get().tree, GUIDE_PATH) ? GUIDE_PATH : null
+      let path: string | null = findNode(get().tree, guidePath()) ? guidePath() : null
       if (path === null) {
         path = await createGuide()
         await get().refreshTree()

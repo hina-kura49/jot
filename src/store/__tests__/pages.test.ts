@@ -4,7 +4,7 @@ import { BackendError, setBackend } from '@/backend'
 import { MockBackend } from '@/backend/mock'
 import { setActiveSession, type ActiveSession } from '@/editor/registry'
 import { countPages, findParentFolder, firstPage, useApp } from '../app'
-import { GUIDE_PATH } from '../guide'
+import { guidePath } from '../guide'
 
 const initialState = useApp.getState()
 let mock: MockBackend
@@ -162,8 +162,8 @@ describe('保管庫の選び直し', () => {
     expect(order).toEqual(['open'])
     // 前の保管庫のページは残らない。選んだ保管庫は空なので、使い方のノートだけが開いている
     expect(useApp.getState()).toMatchObject({ status: 'ready', tree: [] })
-    expect(useApp.getState().page?.path).toBe(GUIDE_PATH)
-    expect(Object.keys(useApp.getState().cache)).toEqual([GUIDE_PATH])
+    expect(useApp.getState().page?.path).toBe(guidePath())
+    expect(Object.keys(useApp.getState().cache)).toEqual([guidePath()])
   })
 
   it('キャンセルしたら、いまの保管庫のまま', async () => {
