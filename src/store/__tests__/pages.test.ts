@@ -4,6 +4,7 @@ import { BackendError, setBackend } from '@/backend'
 import { MockBackend } from '@/backend/mock'
 import { setActiveSession, type ActiveSession } from '@/editor/registry'
 import { countPages, findParentFolder, firstPage, useApp } from '../app'
+import { GUIDE_PATH } from '../guide'
 
 const initialState = useApp.getState()
 let mock: MockBackend
@@ -159,7 +160,10 @@ describe('保管庫の選び直し', () => {
     vi.spyOn(m, 'recentPages').mockResolvedValue([])
     await useApp.getState().openVault()
     expect(order).toEqual(['open'])
-    expect(useApp.getState()).toMatchObject({ status: 'ready', page: null, tree: [], cache: {} })
+    // 前の保管庫のページは残らない。選んだ保管庫は空なので、使い方のノートだけが開いている
+    expect(useApp.getState()).toMatchObject({ status: 'ready', tree: [] })
+    expect(useApp.getState().page?.path).toBe(GUIDE_PATH)
+    expect(Object.keys(useApp.getState().cache)).toEqual([GUIDE_PATH])
   })
 
   it('キャンセルしたら、いまの保管庫のまま', async () => {

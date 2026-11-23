@@ -3,6 +3,7 @@ import { backend, INBOX_PATH, isBackendError, toBackendError, type PageMeta, typ
 import { errorText, logError, textFor } from '@/lib/error-text'
 import CAPTURE_SHORTCUT from '@/capture/shortcut.json'
 import { activeSession, flushActive } from '@/editor/registry'
+import { createGuide, GUIDE_PATH } from './guide'
 import { moveInTree, movedPath, remapPath } from './tree-move'
 
 export const RECENT_LIMIT = 20
@@ -45,6 +46,8 @@ type AppState = {
 
   init(): Promise<void>
   openVault(): Promise<void>
+  /** 使い方のノートを開く。なければ保管庫の直下に作る */
+  openGuide(): Promise<void>
   refreshTree(): Promise<void>
   openPage(path: string): Promise<void>
   prefetch(path: string): void
@@ -149,6 +152,8 @@ export const useApp = create<AppState>()((set, get) => ({
       get().closePage()
       set({ tree: [], recent: [], cache: {}, selectedPath: null })
       await get().init()
+      // 空のフォルダを選んだときは、使い方のノートを1枚作って開く(すでにノートがあるフォルダには何も足さない)
+      if (get().status === 'ready' && get().tree.length === 0) await get().openGuide()
     } catch (e) {
       // 選んだフォルダを開けなかったときは、いまの保管庫のまま(切り替えは開けた後にだけ行う)
       if (isBackendError(e, 'indexOverlapsVault')) {
@@ -157,6 +162,19 @@ export const useApp = create<AppState>()((set, get) => ({
         return
       }
       get().showNotice({ tone: 'warning', title: 'フォルダを開けませんでした', body: errorText('openVault', e), actions: [] })
+    }
+  },
+
+  async openGuide() {
+    try {
+      let path: string | null = findNode(get().tree, GUIDE_PATH) ? GUIDE_PATH : null
+      if (path === null) {
+        path = await createGuide()
+        await get().refreshTree()
+      }
+      await get().openPage(path)
+    } catch (e) {
+      get().showNotice({ tone: 'warning', title: '使い方のノートを作れませんでした', body: errorText('createPage', e), actions: [] })
     }
   },
 

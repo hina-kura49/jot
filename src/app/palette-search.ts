@@ -12,6 +12,7 @@ export const PALETTE_COMMANDS: PaletteCommand[] = [
   { id: 'export-html', label: 'HTML に書き出す(共有用)', keys: '⌘⇧H', aliases: ['html', 'share', 'export', 'きょうゆう', '共有', '書き出す', 'かきだす'] },
   { id: 'export-pdf', label: 'PDF に書き出す', keys: '⌘⇧E', aliases: ['pdf', 'print', 'export', 'いんさつ', '印刷', '書き出す', 'かきだす'] },
   { id: 'toggle-vim', label: 'Vim のキー操作を切り替える(オン・オフ)', aliases: ['vim', 'vi', 'ideavim', 'きー', 'キー', '操作', 'ノーマル', '設定'] },
+  { id: 'open-guide', label: '使い方のノートを開く', aliases: ['guide', 'help', 'tutorial', 'つかいかた', '使い方', 'へるぷ', 'ヘルプ', 'あんない', '案内', 'チュートリアル'] },
   { id: 'toggle-sidebar', label: 'サイドバーを開閉', keys: '⌘\\', aliases: ['sidebar', 'さいどばー', '開く', '閉じる'] },
 ]
 

@@ -47,7 +47,7 @@ sudo apt install libwebkit2gtk-4.1-dev libgtk-3-dev libsoup-3.0-dev librsvg2-dev
 npx tauri build --features core --no-bundle   # → src-tauri/target/release/jot
 ```
 
-On first launch, pick the folder to use as your vault.
+On first launch, pick the folder to use as your vault. An empty folder gets a short "how to use Jot" note to start from; a folder that already has notes is left untouched.
 
 ## Shortcuts
 

@@ -51,6 +51,7 @@ export function CommandPalette() {
     if (c.id === 'new-page') void app.newPage('sibling')
     else if (c.id === 'new-child') void app.newPage('child')
     else if (c.id === 'toggle-sidebar') app.toggleSidebar()
+    else if (c.id === 'open-guide') void app.openGuide()
     else if (c.id === 'export-pdf') exportOpenPage()
     else if (c.id === 'export-html') exportOpenPageHtml()
     else if (c.id === 'toggle-vim') {
