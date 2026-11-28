@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Jot — Markdown notes that stay yours</title>
+  <meta name="description" content="A fast, local-first Markdown notes app. Your notes are plain .md files in a folder you choose. Free and open source for macOS and Linux.">
+  <link rel="icon" href="assets/icon.png">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Jot — Markdown notes that stay yours">
+  <meta property="og:description" content="Fast, local-first Markdown notes. Plain .md files, block editing, Vim mode. Free & open source.">
+  <meta property="og:image" content="https://hina-kura49.github.io/jot/assets/og.png">
+  <meta property="og:url" content="https://hina-kura49.github.io/jot/">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:creator" content="@hkurashina49">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="nav">
+    <a class="brand" href="#"><img src="assets/icon.png" alt=""><span>Jot</span></a>
+    <nav>
+      <a href="#use">Use cases</a>
+      <a href="#features">Features</a>
+      <a href="#install">Install</a>
+      <a href="https://github.com/hina-kura49/jot">GitHub</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="hero">
+      <img class="hero-icon" src="assets/icon.png" alt="">
+      <h1>Markdown notes<br>that stay <em>yours</em>.</h1>
+      <p class="lead">Jot is a fast, local-first notes app. Every note is a plain <code>.md</code> file in a folder you choose — readable by any editor, any tool, and your AI.</p>
+      <div class="cta">
+        <a id="download" class="btn primary" href="https://github.com/hina-kura49/jot/releases/latest">Download</a>
+        <a class="btn" href="https://github.com/hina-kura49/jot">View on GitHub</a>
+      </div>
+      <p class="fine" id="other-downloads">
+        <a href="https://github.com/hina-kura49/jot/releases/latest/download/Jot-macos-universal.dmg">macOS (.dmg)</a> ·
+        <a href="https://github.com/hina-kura49/jot/releases/latest/download/Jot-linux-x86_64.AppImage">Linux (AppImage)</a> ·
+        <a href="https://github.com/hina-kura49/jot/releases/latest/download/Jot-linux-amd64.deb">Linux (.deb)</a>
+      </p>
+      <p class="fine">Free &amp; open source · macOS &amp; Linux · v1.0</p>
+      <div class="video">
+        <video src="assets/demo.mp4" poster="assets/poster.jpg" autoplay muted loop playsinline></video>
+      </div>
+    </section>
+
+    <section id="use" class="section">
+      <p class="kicker">When you'll use it</p>
+      <h2>Made for the notes you actually keep.</h2>
+      <div class="cards">
+        <article class="card"><h3>A work log your AI can read</h3><p>Keep project notes in Jot and point your coding agent at the same folder. It reads the plain files directly — no export, no plugin.</p></article>
+        <article class="card"><h3>Vim keys, even while typing Japanese</h3><p>Turn on Vim mode and keep moving with <code>hjkl</code>. It keeps working while a Japanese IME is on, which most editors get wrong.</p></article>
+        <article class="card"><h3>Capture a thought from any app</h3><p>Press <kbd>⌃⌥Space</kbd> anywhere. A small window appears, you type, and it lands in your inbox note.</p></article>
+        <article class="card"><h3>Notes that still open in ten years</h3><p>No database, no proprietary format. If Jot disappears tomorrow, your folder of Markdown is still there.</p></article>
+      </div>
+    </section>
+
+    <section id="features" class="section">
+      <p class="kicker">Features</p>
+      <h2>Fast to write. Nothing to lock you in.</h2>
+      <div class="feature">
+        <div><h3>Block editor</h3><p>Type <code># </code>, <code>- </code>, <code>[] </code> or <code>&gt; </code> and the line becomes a heading, list, checklist or quote. Press <code>/</code> for the block menu. Blocks you didn't touch are saved back byte-for-byte.</p></div>
+        <img src="assets/typing.gif" alt="Typing a heading, a paragraph and a code block in Jot" loading="lazy">
+      </div>
+      <div class="feature rev">
+        <div><h3>Vim mode</h3><p>Optional Vim keybindings with normal, insert and visual modes — designed to cooperate with an input method instead of fighting it.</p></div>
+        <img src="assets/vim-mode.gif" alt="Editing a note with Vim keys" loading="lazy">
+      </div>
+      <div class="feature">
+        <div><h3>Plain files, shared with your tools</h3><p>The folder is the source of truth. Edit the same note in Jot, in your terminal, or let an AI agent read it — everyone sees the same text.</p></div>
+        <img src="assets/ai-reads-md.gif" alt="An AI agent reading the same .md file Jot is editing" loading="lazy">
+      </div>
+      <div class="feature rev">
+        <div><h3>Command palette</h3><p><kbd>⌘K</kbd> searches page titles, full text and commands from one input. Pages nest into a tree you can drag to reorganize; links follow when you move things.</p></div>
+        <img src="assets/palette.png" alt="The command palette listing pages and full-text results" loading="lazy">
+      </div>
+      <ul class="more">
+        <li>Code blocks with syntax highlighting · <code>mermaid</code> diagrams</li>
+        <li>Light &amp; dark themes</li>
+        <li>Export a page as a single HTML file</li>
+        <li>Fast with thousands of notes</li>
+      </ul>
+    </section>
+
+    <section id="install" class="section">
+      <p class="kicker">Install</p>
+      <h2>Up and running in a minute.</h2>
+      <div class="steps">
+        <div class="step"><h3>macOS</h3>
+          <ol>
+            <li><a href="https://github.com/hina-kura49/jot/releases/latest/download/Jot-macos-universal.dmg">Download the .dmg</a> and drag <b>Jot</b> into Applications.</li>
+            <li>The app isn't notarized by Apple yet, so the first time, <b>right-click Jot → Open</b> and confirm. (Or open it once, then go to System Settings → Privacy &amp; Security → <b>Open Anyway</b>.)</li>
+            <li>Pick a folder to use as your vault. An empty folder gets a short getting-started note.</li>
+          </ol>
+        </div>
+        <div class="step"><h3>Linux</h3>
+          <ol>
+            <li>Download the <a href="https://github.com/hina-kura49/jot/releases/latest/download/Jot-linux-x86_64.AppImage">AppImage</a> or the <a href="https://github.com/hina-kura49/jot/releases/latest/download/Jot-linux-amd64.deb">.deb</a>.</li>
+            <li>AppImage: <code>chmod +x Jot-linux-x86_64.AppImage</code> and run it. Deb: <code>sudo apt install ./Jot-linux-amd64.deb</code>.</li>
+            <li>Pick a folder to use as your vault.</li>
+          </ol>
+        </div>
+      </div>
+      <p class="fine center">Prefer to build it yourself? See <a href="https://github.com/hina-kura49/jot#build-from-source">Build from source</a>.</p>
+    </section>
+
+    <section class="section">
+      <p class="kicker">Shortcuts</p>
+      <h2>Keep your hands on the keyboard.</h2>
+      <table class="keys">
+        <tr><td><kbd>⌘K</kbd></td><td>Command palette</td></tr>
+        <tr><td><kbd>/</kbd></td><td>Block menu</td></tr>
+        <tr><td><kbd>⌘F</kbd></td><td>Find in page</td></tr>
+        <tr><td><kbd>⌘N</kbd> / <kbd>⌘⇧N</kbd></td><td>New page / new child page</td></tr>
+        <tr><td><kbd>⌘⇧↑</kbd> / <kbd>⌘⇧↓</kbd></td><td>Move block up / down</td></tr>
+        <tr><td><kbd>⌘⇧H</kbd></td><td>Export page as HTML</td></tr>
+        <tr><td><kbd>⌃⌥Space</kbd></td><td>Quick capture (global)</td></tr>
+      </table>
+      <p class="fine center">On Linux, read ⌘ as Ctrl.</p>
+    </section>
+
+    <section class="section faq">
+      <p class="kicker">FAQ</p>
+      <h2>Questions</h2>
+      <details><summary>Is it free?</summary><p>Yes. Jot is open source under the MIT license.</p></details>
+      <details><summary>Where are my notes stored?</summary><p>In the folder you pick, as plain <code>.md</code> files. Nothing is uploaded anywhere.</p></details>
+      <details><summary>Can I use my existing Markdown folder?</summary><p>Yes. Point Jot at it. Files you open and save without editing stay byte-for-byte identical.</p></details>
+      <details><summary>Is there a Windows version?</summary><p>Not yet. macOS and Linux for now.</p></details>
+      <details><summary>What language is the app in?</summary><p>The app UI is currently in Japanese, with English coming. The getting-started note follows your system language.</p></details>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <p><img src="assets/icon.png" alt=""> Jot · MIT License</p>
+    <p><a href="https://github.com/hina-kura49/jot">GitHub</a> · <a href="https://hina-kura49.github.io/portfolio/">Made by kura</a> · <a href="https://x.com/hkurashina49">X</a></p>
+  </footer>
+
+  <script>
+    // Point the main button at the right file for this OS.
+    (function () {
+      var ua = navigator.userAgent, btn = document.getElementById('download'), base = 'https://github.com/hina-kura49/jot/releases/latest/download/';
+      if (/Mac/i.test(ua) && !/iPhone|iPad/.test(ua)) { btn.href = base + 'Jot-macos-universal.dmg'; btn.textContent = 'Download for macOS'; }
+      else if (/Linux/i.test(ua) && !/Android/.test(ua)) { btn.href = base + 'Jot-linux-x86_64.AppImage'; btn.textContent = 'Download for Linux'; }
+    })();
+  </script>
+</body>
+</html>
