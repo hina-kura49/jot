@@ -2,27 +2,57 @@
 
 A fast, local-first Markdown notes app. Your notes are plain `.md` files in a folder you choose — no database, no proprietary format.
 
+<p align="center">
+  <img src="docs/images/demo.gif" width="960" alt="Editing a note in Jot with Vim keys on the left, while an AI coding agent in a terminal on the right reads the same .md file and answers">
+</p>
+
 Built with Tauri 2, React and Rust. Runs on macOS and Linux.
+
+## Features
+
+### Plain Markdown files
+
+Point Jot at a folder and it reads and writes the `.md` files directly. Any other editor — or an AI agent in your terminal — can open the same notes, with nothing to export.
+
+<p align="center">
+  <img src="docs/images/ai-reads-md.gif" width="800" alt="A terminal agent searches the vault, reads Projects/Launch plan.md and lists the open tasks">
+</p>
+
+### Block editor
+
+Type `# `, `- `, `[] ` or `> ` and the line becomes a heading, list, checklist or quote. Press `/` for the block menu. Code blocks get syntax highlighting, a language picker and a copy button, and `mermaid` blocks render as diagrams.
+
+<p align="center">
+  <img src="docs/images/typing.gif" width="760" alt="Typing a heading, a paragraph and a code block: each turns into a block as you type">
+</p>
+
+### Vim mode
+
+Optional Vim keybindings (`NORMAL` / `INSERT`, motions like `b` and `o`) that keep working while a Japanese IME is on.
+
+<p align="center">
+  <img src="docs/images/vim-mode.gif" width="560" alt="Turning on Vim mode, jumping back a word with b, changing Friday to Monday and adding a task with o">
+</p>
+
+### Command palette
+
+`⌘K` / `Ctrl+K` searches page titles, full text and commands from one input.
+
+<p align="center">
+  <img src="docs/images/palette.png" width="800" alt="The command palette listing matching pages and full-text results">
+</p>
+
+### And more
+
+- **Lossless saving.** Blocks you did not touch are written back byte-for-byte, so opening and saving a file never produces a diff.
+- **Page tree.** Nest pages and folders, and drag to reorganize. Links between pages are rewritten when you move things.
+- **Quick capture.** A global hotkey opens a small window that appends to your inbox from any app.
+- **Light and dark themes.**
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/images/editor-dark.png">
   <img src="docs/images/editor-light.png" alt="Jot showing a page tree on the left and a note with headings, a quote, a code block, a checklist and a table">
 </picture>
-
-## Features
-
-- **Plain Markdown files.** Point Jot at a folder and it reads and writes the `.md` files directly. Any other editor can open the same notes.
-- **Block editor.** Type `# `, `- `, `[] ` or `> ` and the line becomes a heading, list, checklist or quote. Press `/` for the block menu.
-- **Lossless saving.** Blocks you did not touch are written back byte-for-byte, so opening and saving a file never produces a diff.
-- **Code blocks.** Syntax highlighting, a language picker and a copy button. `mermaid` blocks render as diagrams.
-- **Command palette.** `⌘K` / `Ctrl+K` searches page titles, full text and commands from one input.
-- **Page tree.** Nest pages and folders, and drag to reorganize. Links between pages are rewritten when you move things.
-- **Quick capture.** A global hotkey opens a small window that appends to your inbox from any app.
-- **Vim mode.** Optional Vim keybindings that keep working while a Japanese IME is on.
-
-![Typing a heading, a paragraph and a code block: each turns into a block as you type](docs/images/typing.gif)
-
-![The command palette listing matching pages and full-text results](docs/images/palette.png)
 
 ## Install
 
