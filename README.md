@@ -6,7 +6,16 @@ A fast, local-first Markdown notes app. Your notes are plain `.md` files in a fo
   <img src="docs/images/demo.gif" width="960" alt="Editing a note in Jot with Vim keys on the left, while an AI coding agent in a terminal on the right reads the same .md file and answers">
 </p>
 
-Built with Tauri 2, React and Rust. Runs on macOS and Linux.
+**[Download for macOS](https://github.com/hina-kura49/jot/releases/latest/download/Jot-macos-universal.dmg)** · **[Download for Linux (AppImage)](https://github.com/hina-kura49/jot/releases/latest/download/Jot-linux-x86_64.AppImage)** · [.deb](https://github.com/hina-kura49/jot/releases/latest/download/Jot-linux-amd64.deb) · [Website](https://hina-kura49.github.io/jot/)
+
+Free and open source. macOS and Linux.
+
+## When you'll use it
+
+- **A work log your AI can read.** Keep project notes in Jot and point your coding agent at the same folder — it reads the plain files directly.
+- **Vim keys, even while typing Japanese.** Vim mode keeps working while an IME is on.
+- **Capture a thought from any app.** Press `⌃⌥Space` anywhere and it lands in your inbox note.
+- **Notes that still open in ten years.** No database, no proprietary format — just a folder of Markdown.
 
 ## Features
 
@@ -56,7 +65,34 @@ Optional Vim keybindings (`NORMAL` / `INSERT`, motions like `b` and `o`) that ke
 
 ## Install
 
-There are no prebuilt binaries yet. Build from source with [Node.js](https://nodejs.org/) and [Rust](https://www.rust-lang.org/tools/install):
+**macOS**
+
+1. [Download the .dmg](https://github.com/hina-kura49/jot/releases/latest/download/Jot-macos-universal.dmg) and drag **Jot** into Applications.
+2. Jot isn't notarized by Apple yet, so the first time, **right-click Jot → Open** and confirm (or open it once, then System Settings → Privacy & Security → **Open Anyway**).
+
+**Linux**
+
+Download the [AppImage](https://github.com/hina-kura49/jot/releases/latest/download/Jot-linux-x86_64.AppImage) (`chmod +x` it and run) or the [.deb](https://github.com/hina-kura49/jot/releases/latest/download/Jot-linux-amd64.deb) (`sudo apt install ./Jot-linux-amd64.deb`).
+
+On first launch, pick the folder to use as your vault. An empty folder gets a short getting-started note (in English or Japanese, following your system language); a folder that already has notes is left untouched.
+
+## Shortcuts
+
+On Linux, read `⌘` as `Ctrl`.
+
+| Key | Action |
+| --- | --- |
+| `⌘K` | Command palette |
+| `/` | Block menu |
+| `⌘F` | Find in page |
+| `⌘N` / `⌘⇧N` | New page / new child page |
+| `⌘⇧↑` / `⌘⇧↓` | Move block up / down |
+| `⌘⇧H` | Export page as a single HTML file |
+| `⌃⌥Space` | Quick capture (global) |
+
+## Build from source
+
+You need [Node.js](https://nodejs.org/) and [Rust](https://www.rust-lang.org/tools/install):
 
 ```sh
 git clone https://github.com/hina-kura49/jot.git
@@ -76,22 +112,6 @@ npm run build:app   # → src-tauri/target/release/bundle/macos/Jot.app
 sudo apt install libwebkit2gtk-4.1-dev libgtk-3-dev libsoup-3.0-dev librsvg2-dev libayatana-appindicator3-dev libxdo-dev libssl-dev
 npx tauri build --features core --no-bundle   # → src-tauri/target/release/jot
 ```
-
-On first launch, pick the folder to use as your vault. An empty folder gets a short getting-started note (in English or Japanese, following your system language); a folder that already has notes is left untouched.
-
-## Shortcuts
-
-On Linux, read `⌘` as `Ctrl`.
-
-| Key | Action |
-| --- | --- |
-| `⌘K` | Command palette |
-| `/` | Block menu |
-| `⌘F` | Find in page |
-| `⌘N` / `⌘⇧N` | New page / new child page |
-| `⌘⇧↑` / `⌘⇧↓` | Move block up / down |
-| `⌘⇧H` | Export page as a single HTML file |
-| `⌃⌥Space` | Quick capture (global) |
 
 ## Development
 
